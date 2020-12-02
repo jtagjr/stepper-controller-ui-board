@@ -69,6 +69,7 @@ void set_motor_head_down();
 void enable_motor_head();
 void disable_motor_head();
 void motor_head_button_up();
+void rotary_switches_task();
 
 #define NUM_SAMPLES 40
 static int32_t s_voltages[NUM_SAMPLES];
@@ -100,29 +101,30 @@ int main()
     analogin_init(&speed_control, PA_7);
 
     init_pwm();
-    Timer timer;
-    timer.start();
-
     enable_motor_head();
 
     while (true)
     {
         move_grinder_head_task(speed_control);
-        
-        if (s_down_button && s_up_button)
-        {
-            rotary_switch_task(s_bottom_rotary_encoder_state, 
-                            s_rotary_line_bottom_low_1st_cw, 
-                            s_rotary_line_bottom_low_2nd_cw, 
-                            [](){ pulse_motor(false, PULSES_PER_HALF_TEN_THOUSANDTH, DigitalOut(PWM_OUT)); }, 
-                            [](){ pulse_motor(true, PULSES_PER_HALF_TEN_THOUSANDTH, DigitalOut(PWM_OUT)); });
+        rotary_switches_task();
+    }
+}
 
-            rotary_switch_task(s_top_rotary_encoder_state, 
-                            s_rotary_line_top_low_1st_cw, 
-                            s_rotary_line_top_low_2nd_cw, 
-                            [](){ pulse_motor(false, PULSES_PER_ONE_THOUSANDTH, DigitalOut(PWM_OUT)); }, 
-                            [](){ pulse_motor(true, PULSES_PER_ONE_THOUSANDTH, DigitalOut(PWM_OUT)); });
-        }
+void rotary_switches_task()
+{
+    if (s_down_button && s_up_button)
+    {
+        rotary_switch_task(s_bottom_rotary_encoder_state, 
+                           s_rotary_line_bottom_low_1st_cw, 
+                           s_rotary_line_bottom_low_2nd_cw, 
+                           [](){ pulse_motor(false, PULSES_PER_HALF_TEN_THOUSANDTH, DigitalOut(PWM_OUT)); }, 
+                           [](){ pulse_motor(true, PULSES_PER_HALF_TEN_THOUSANDTH, DigitalOut(PWM_OUT)); });
+
+        rotary_switch_task(s_top_rotary_encoder_state, 
+                           s_rotary_line_top_low_1st_cw, 
+                           s_rotary_line_top_low_2nd_cw, 
+                           [](){ pulse_motor(false, PULSES_PER_ONE_THOUSANDTH, DigitalOut(PWM_OUT)); }, 
+                           [](){ pulse_motor(true, PULSES_PER_ONE_THOUSANDTH, DigitalOut(PWM_OUT)); });
     }
 }
 
